@@ -99,7 +99,20 @@ ul {
   margin: 0;
   padding: 0;
   display: flex;
-justify-content:center;
-background-image: linear-gradient(#40A2E3,#7FC2EF);
-color: white;
+  justify-content: center;
+  background-image: linear-gradient(#40A2E3, #7FC2EF);
+}
+
+/* 1. Estiliza os links (texto branco e remove sublinhado) */
+ul li a {
+  display: block;          /* Faz o link ocupar todo o espaço do botão */
+  color: white;            /* Cor do texto */
+  padding: 14px 20px;      /* Espaçamento interno para dar tamanho ao botão */
+  text-decoration: none;   /* Remove o sublinhado padrão de link */
+  transition: 0.3s;        /* Deixa a mudança de cor suave ao passar o mouse */
+}
+
+/* 2. Efeito ao passar o mouse (Hover) */
+ul li a:hover {
+  background-color: #0D629B; /* Cor azul mais escura que destaca no menu */
 }
