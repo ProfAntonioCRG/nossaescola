@@ -92,3 +92,10 @@ padding: 12px 0;
 color: #ffffff;
 text-decoration: none;
 }
+
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
