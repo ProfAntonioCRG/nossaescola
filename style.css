@@ -94,25 +94,42 @@ text-decoration: none;
 }
 
 
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  background-image: linear-gradient(#40A2E3, #7FC2EF);
+.dropbtn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
 }
 
-/* 1. Estiliza os links (texto branco e remove sublinhado) */
-ul li a {
-  display: block;          /* Faz o link ocupar todo o espaço do botão */
-  color: white;            /* Cor do texto */
-  padding: 14px 20px;      /* Espaçamento interno para dar tamanho ao botão */
-  text-decoration: none;   /* Remove o sublinhado padrão de link */
-  transition: 0.3s;        /* Deixa a mudança de cor suave ao passar o mouse */
+.dropdown {
+  position: relative;
 }
 
-/* 2. Efeito ao passar o mouse (Hover) */
-ul li a:hover {
-  background-color: #0D629B; /* Cor azul mais escura que destaca no menu */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: #3e8e41;
 }
