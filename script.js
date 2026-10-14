@@ -3,7 +3,16 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 
-// Define a resolução interna fixa do jogo (estilo retrô)
+// Garante que o canvas possa receber foco do teclado
+canvas.setAttribute("tabindex", "0");
+// Aplica um leve contorno visual apenas quando focado (opcional, remova se preferir)
+canvas.style.outline = "none"; 
+
+// Força o foco no canvas ao carregar a página e ao clicar nele
+window.addEventListener("load", () => canvas.focus());
+canvas.addEventListener("click", () => canvas.focus());
+
+// Resolução interna fixa do jogo (estilo retrô)
 canvas.width = 640;
 canvas.height = 480;
 
@@ -66,19 +75,21 @@ function spawnCars() {
 }
 spawnCars();
 
-// Ouvintes de Teclado
+// Ouvintes de Teclado Atualizados (Prevenindo bugs de letras maiúsculas)
 window.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft' || e.key === 'a') keys.Left = true;
-    if (e.key === 'ArrowRight' || e.key === 'd') keys.Right = true;
-    if (e.key === 'ArrowUp' || e.key === 'w') keys.Up = true;
-    if (e.key === 'ArrowDown' || e.key === 's') keys.Down = true;
+    const key = e.key.toLowerCase();
+    if (key === 'arrowleft' || key === 'a') { keys.Left = true; e.preventDefault(); }
+    if (key === 'arrowright' || key === 'd') { keys.Right = true; e.preventDefault(); }
+    if (key === 'arrowup' || key === 'w') { keys.Up = true; e.preventDefault(); }
+    if (key === 'arrowdown' || key === 's') { keys.Down = true; e.preventDefault(); }
 });
 
 window.addEventListener('keyup', e => {
-    if (e.key === 'ArrowLeft' || e.key === 'a') keys.Left = false;
-    if (e.key === 'ArrowRight' || e.key === 'd') keys.Right = false;
-    if (e.key === 'ArrowUp' || e.key === 'w') keys.Up = false;
-    if (e.key === 'ArrowDown' || e.key === 's') keys.Down = false;
+    const key = e.key.toLowerCase();
+    if (key === 'arrowleft' || key === 'a') keys.Left = false;
+    if (key === 'arrowright' || key === 'd') keys.Right = false;
+    if (key === 'arrowup' || key === 'w') keys.Up = false;
+    if (key === 'arrowdown' || key === 's') keys.Down = false;
 });
 
 // Mecânica de Projeção 3D para 2D
@@ -99,7 +110,7 @@ function drawSegment(c, p1, p2) {
     ctx.fillStyle = c.grass;
     ctx.fillRect(0, p2.screen.y, canvas.width, p1.screen.y - p2.screen.y);
     
-    // Zebra / Rumble info
+    // Zebra / Rumble
     let r1 = p1.screen.w * 0.1;
     let r2 = p2.screen.w * 0.1;
     ctx.fillStyle = c.rumble;
@@ -126,14 +137,11 @@ function drawVehicle(x, y, scale, color, isPlayer = false) {
     let h = 30 * scale * (canvas.width / 2);
     
     ctx.fillStyle = color;
-    // Corpo do carro
     ctx.fillRect(x - w / 2, y - h, w, h);
-    // Rodas (Estilo Atari)
     ctx.fillStyle = '#000';
     ctx.fillRect(x - w / 2 - 4, y - h + 5, 5, h - 8);
     ctx.fillRect(x + w / 2 - 1, y - h + 5, 5, h - 8);
     
-    // Detalhe de aerofólio traseiro se for o jogador
     if (isPlayer) {
         ctx.fillStyle = '#FFF';
         ctx.fillRect(x - w / 2, y - h - 4, w, 4);
@@ -148,8 +156,6 @@ function update() {
         ctx.fillStyle = "#FFF";
         ctx.font = "30px 'Courier New'";
         ctx.fillText("FIM DE JOGO!", canvas.width / 2 - 90, canvas.height / 2);
-        ctx.font = "16px 'Courier New'";
-        ctx.fillText("Pressione F5 para reiniciar", canvas.width / 2 - 120, canvas.height / 2 + 40);
         return;
     }
 
@@ -160,7 +166,7 @@ function update() {
     
     speed = Math.max(0, Math.min(speed, maxSpeed));
     position += speed;
-    if (position >= trackLength) position -= trackLength; // Loop na pista
+    if (position >= trackLength) position -= trackLength;
 
     // Curvatura e Movimento Lateral
     let playerSegment = segments[Math.floor(position / segmentLength) % segments.length];
@@ -168,12 +174,12 @@ function update() {
 
     if (keys.Left) playerX -= 0.04 * (speed / maxSpeed);
     if (keys.Right) playerX += 0.04 * (speed / maxSpeed);
-    playerX = Math.max(-2, Math.min(playerX, 2)); // Limite para não sair totalmente do cenário
+    playerX = Math.max(-2, Math.min(playerX, 2));
 
     // 2. Renderizar Cenário (Céu)
-    ctx.fillStyle = "#111133"; // Noite estilo Enduro
+    ctx.fillStyle = "#111133";
     ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
-    ctx.fillStyle = "#115522"; // Horizonte distorcido
+    ctx.fillStyle = "#115522";
     ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
 
     // 3. Renderizar Pista Pseudo-3D
@@ -206,7 +212,7 @@ function update() {
     // 4. Renderizar e Atualizar Carros Adversários
     cars.forEach(car => {
         car.z -= car.speed;
-        if (car.z < 0) car.z += trackLength; // Loop dos carros
+        if (car.z < 0) car.z += trackLength;
 
         let carSegment = segments[Math.floor(car.z / segmentLength) % segments.length];
         let loop = car.z > position ? -trackLength : 0;
@@ -214,37 +220,46 @@ function update() {
         let p = { world: { x: car.offset * roadWidth, y: 0, z: car.z }, camera: {}, screen: {} };
         project(p, cameraX, position + loop, roadWidth);
 
-        // Desenha se estiver na distância de visão da câmera
         if (p.camera.z > cameraDepth && p.camera.z < drawDistance * segmentLength) {
             drawVehicle(p.screen.x, p.screen.y, p.screen.scale, car.color);
         }
 
-        // Detecção de Colisão Crítica (Próximo ao jogador no eixo Z e X)
+        // Colisão
         if (Math.abs(car.z - position) < 250 && Math.abs(car.offset - playerX) < 0.3) {
-            speed = 2; // Penalidade de colisão do Enduro
+            speed = 2;
             score = Math.max(0, score - 5);
         }
     });
 
-    // 5. Desenhar Carro do Jogador (Sempre centralizado embaixo)
+    // 5. Desenhar Carro do Jogador
     drawVehicle(canvas.width / 2, canvas.height - 20, cameraDepth / 200, '#E51A1A', true);
 
-    // 6. Placar e HUD estilo clássico
+    // 6. Placar e HUD
     score += Math.floor(speed / 5);
     ctx.fillStyle = "#FFF";
     ctx.font = "20px 'Courier New'";
     ctx.fillText(`PONTOS: ${score}`, 20, 40);
     ctx.fillText(`VEL: ${Math.floor(speed * 10)} KM/H`, canvas.width - 200, 40);
 
+    // Mensagem informativa discreta se o jogo não estiver focado
+    if (document.activeElement !== canvas) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+        ctx.fillStyle = "#FFF";
+        ctx.font = "14px 'Courier New'";
+        ctx.fillText("CLIQUE NA TELA DO JOGO PARA JOGAR (ATIVAR TECLADO)", 100, canvas.height - 15);
+    }
+
     requestAnimationFrame(update);
 }
 
-// Gerenciamento Inteligente de Fullscreen
+// Gerenciamento de Fullscreen
 if (fullscreenBtn) {
     fullscreenBtn.addEventListener('click', () => {
-        // Solicita a tela cheia para o elemento container ou para o canvas diretamente
         if (!document.fullscreenElement) {
-            canvas.requestFullscreen().catch(err => {
+            canvas.requestFullscreen().then(() => {
+                setTimeout(() => canvas.focus(), 100); // Garante foco ao entrar em tela cheia
+            }).catch(err => {
                 alert(`Erro ao tentar ativar tela cheia: ${err.message}`);
             });
         } else {
@@ -255,4 +270,3 @@ if (fullscreenBtn) {
 
 // Inicia o Jogo
 update();
-
